@@ -1,0 +1,28 @@
+PODS:
+  - coast_audio_native_codec (0.0.1):
+    - FlutterMacOS
+  - flutter_coast_audio_miniaudio (0.0.1):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+
+DEPENDENCIES:
+  - coast_audio_native_codec (from `Flutter/ephemeral/.symlinks/plugins/coast_audio_native_codec/macos`)
+  - flutter_coast_audio_miniaudio (from `Flutter/ephemeral/.symlinks/plugins/flutter_coast_audio_miniaudio/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+
+EXTERNAL SOURCES:
+  coast_audio_native_codec:
+    :path: Flutter/ephemeral/.symlinks/plugins/coast_audio_native_codec/macos
+  flutter_coast_audio_miniaudio:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_coast_audio_miniaudio/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+
+SPEC CHECKSUMS:
+  coast_audio_native_codec: 1f59b5b3522960c3182c9037b3144edfc845b87b
+  flutter_coast_audio_miniaudio: def806c54d4f1967788b7ad94829ccc5bca7e4d4
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+
+PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
+
+COCOAPODS: 1.12.1

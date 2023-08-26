@@ -1,0 +1,22 @@
+PODS:
+  - coast_audio_native_codec (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - coast_audio_native_codec (from `.symlinks/plugins/coast_audio_native_codec/ios`)
+  - Flutter (from `Flutter`)
+
+EXTERNAL SOURCES:
+  coast_audio_native_codec:
+    :path: ".symlinks/plugins/coast_audio_native_codec/ios"
+  Flutter:
+    :path: Flutter
+
+SPEC CHECKSUMS:
+  coast_audio_native_codec: 56f1045624bb64737fe1aa8c6892fcdd81c3e727
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+
+PODFILE CHECKSUM: 70d9d25280d0dd177a5f637cdb0f0b0b12c6a189
+
+COCOAPODS: 1.12.1
