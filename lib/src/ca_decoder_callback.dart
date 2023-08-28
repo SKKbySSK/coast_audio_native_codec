@@ -19,7 +19,7 @@ class CaDecoderCallback {
   final ca_decoder_decoded_proc onDecoded;
 
   final AudioInputDataSource _dataSource;
-  void Function(int frameCount, Pointer<Void> pBuffer) _onDecoded;
+  final void Function(int frameCount, Pointer<Void> pBuffer) _onDecoded;
 }
 
 class CaDecoderCallbackRegistry {

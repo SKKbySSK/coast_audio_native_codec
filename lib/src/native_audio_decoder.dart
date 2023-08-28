@@ -92,6 +92,15 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
   }
 
   @override
+  int get lengthInFrames => nativeFormat.length;
+
+  @override
+  late final AudioFormat outputFormat = nativeFormat.audioFormat!;
+
+  @override
+  bool get canSeek => true;
+
+  @override
   AudioDecodeResult decode({required AudioBuffer destination}) {
     while (_queue.availableFrames <= destination.sizeInFrames && !isEOF) {
       bindings.ca_decoder_decode(_pDecoder, 1024, _pBytesRead).throwIfNeeded();
@@ -102,15 +111,9 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
 
     return AudioDecodeResult(
       frames: framesRead,
-      isEnd: false,
+      isEnd: isEOF,
     );
   }
-
-  @override
-  int get lengthInFrames => nativeFormat.length;
-
-  @override
-  late final AudioFormat outputFormat = nativeFormat.audioFormat!;
 
   @override
   void uninit() {

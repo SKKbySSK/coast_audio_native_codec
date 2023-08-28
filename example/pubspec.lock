@@ -37,18 +37,18 @@ packages:
     dependency: "direct main"
     description:
       name: coast_audio
-      sha256: "09dbf5a75e1c8a6f549c5694a5ce04eb7e9422e2c2244448bb671a2738fd3424"
+      sha256: "3bf35805bb5eeea0f9999210e5134621627ca6e8900ebc10f6504d3cc7bac278"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2+1"
+    version: "0.0.3"
   coast_audio_miniaudio:
     dependency: transitive
     description:
       name: coast_audio_miniaudio
-      sha256: "57ea43c8c726571c87f912d078d3ca1a6a2866c74ec394460f9a4183a5f7588b"
+      sha256: "87019e57e2289b3a750ab1d68dd1210bb967f592330801920daea1c9ecd00a19"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1+1"
+    version: "0.0.2"
   coast_audio_native_codec:
     dependency: "direct main"
     description:
@@ -113,10 +113,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_coast_audio_miniaudio
-      sha256: "086fdfc465ae1c9846adbb4bc3b04f5565114ebaa79f969387b896d0c708a5ac"
+      sha256: "77e9cb0f17d6d9fbd918f8b4cc3c7a00773de2d56f97e78f9afc3ab895ca924b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "0.0.2"
   flutter_lints:
     dependency: "direct dev"
     description:

@@ -8,7 +8,7 @@ environment:
   flutter: ">=3.3.0"
 
 dependencies:
-  coast_audio: ^0.0.2+1
+  coast_audio: ^0.0.3
   ffi: ^2.1.0
   disposing: ^1.0.3+1
   flutter:

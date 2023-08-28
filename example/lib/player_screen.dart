@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:coast_audio_native_codec/coast_audio_native_codec.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class PlayerScreen extends StatefulWidget {
 class _PlayerScreenState extends State<PlayerScreen> {
   late final decoder = NativeAudioDecoder(dataSource: widget.dataSource);
   late final nativeFormat = decoder.nativeFormat;
-  late final player = MabAudioPlayer(format: decoder.outputFormat, limitMaxPosition: false, isLoop: true);
+  late final player = MabAudioPlayer(format: decoder.outputFormat, isLoop: true);
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     try {
       await player.open(decoder);
     } on Exception catch (e) {
+      // ignore:
       print(e);
     }
   }
@@ -75,7 +77,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
           Slider(
             value: AudioTime.fromFrames(frames: decoder.cursorInFrames, format: decoder.outputFormat).seconds,
-            max: AudioTime.fromFrames(frames: decoder.lengthInFrames, format: decoder.outputFormat).seconds,
+            max: AudioTime.fromFrames(frames: max(decoder.lengthInFrames, decoder.cursorInFrames), format: decoder.outputFormat).seconds,
             onChanged: (value) {
               decoder.cursorInFrames = AudioTime(value).computeFrames(decoder.outputFormat);
             },
