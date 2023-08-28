@@ -245,9 +245,9 @@ static void audio_file_stream_packets(void *inClientData, UInt32 inNumberBytes, 
       return;
     }
     
-    UInt32 minBufferSize;
+    UInt32 minBufferSize = 0;
     result = get_converter_property(pStream, kAudioConverterPropertyMinimumOutputBufferSize, sizeof(UInt32), &minBufferSize);
-    if (result != ca_result_success)
+    if (result != ca_result_success && result != kAudioConverterErr_PropertyNotSupported)
     {
       return;
     }
