@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:ffi';
 import 'dart:math';
 
@@ -11,51 +10,32 @@ import 'ca_codec_bindings_generated.dart';
 import 'native_audio_codec.dart';
 
 class _AudioFramesQueue {
-  _AudioFramesQueue();
+  _AudioFramesQueue(this.format);
 
-  final _queue = Queue<AllocatedAudioFrames>();
-  var _frameOffset = 0;
+  final AudioFormat format;
+  final _samples = <num>[];
 
   int get availableFrames {
-    return _queue.fold(0, (previousValue, element) => previousValue + element.sizeInFrames) - _frameOffset;
+    return _samples.length ~/ format.channels;
   }
 
   int read(AudioBuffer destination) {
-    if (_queue.isEmpty) {
-      return 0;
-    }
-
     var buffer = destination;
-    final disposeFrames = <AllocatedAudioFrames>[];
-
-    while (_queue.isNotEmpty && buffer.sizeInFrames > 0) {
-      final queueFrames = _queue.first;
-      final queueBuffer = queueFrames.lock().offset(_frameOffset);
-      final copyFrameCount = min(queueBuffer.sizeInFrames, buffer.sizeInFrames);
-
-      if (queueBuffer.sizeInFrames < buffer.sizeInFrames) {
-        _queue.removeFirst();
-        disposeFrames.add(queueFrames);
-        _frameOffset = 0;
-      } else {
-        _frameOffset += queueBuffer.sizeInFrames - buffer.sizeInFrames;
-      }
-
-      queueBuffer.copyTo(buffer, frames: copyFrameCount);
-      buffer = buffer.offset(copyFrameCount);
-
-      queueFrames.unlock();
+    final floatList = buffer.asFloat32ListView();
+    final length = min(floatList.length, _samples.length);
+    for (var i = 0; length > i; i++) {
+      floatList[i] = _samples[i] as double;
     }
-
-    for (final frames in disposeFrames) {
-      frames.dispose();
-    }
-
-    return destination.sizeInFrames - buffer.sizeInFrames;
+    _samples.removeRange(0, length);
+    return length ~/ format.channels;
   }
 
-  void push(AllocatedAudioFrames frames) {
-    _queue.add(frames);
+  void push(AudioBuffer buffer) {
+    _samples.addAll(buffer.asFloat32ListView());
+  }
+
+  void clear() {
+    _samples.clear();
   }
 }
 
@@ -66,7 +46,9 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
   }) {
     final config = bindings.ca_decoder_config_init();
     final callback = CaDecoderCallbackRegistry.registerDataSource(_pDecoder, dataSource, _onDecoded);
-    bindings.ca_decoder_init(_pDecoder, config, callback.onRead, callback.onSeek, callback.onDecoded, _pDecoder.cast()).throwIfNeeded();
+    bindings
+        .ca_decoder_init(_pDecoder, config, callback.onRead, callback.onSeek, callback.onTell, callback.onDecoded, _pDecoder.cast())
+        .throwIfNeeded();
   }
 
   final AudioInputDataSource dataSource;
@@ -75,7 +57,16 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
 
   late final _pBytesRead = allocate<UnsignedInt>(sizeOf<UnsignedInt>());
 
-  final _queue = _AudioFramesQueue();
+  late final _pIsEOF = allocate<Int>(sizeOf<Int>());
+
+  late final _pBytesOffset = allocate<UnsignedLongLong>(sizeOf<UnsignedLongLong>());
+
+  late final _queue = _AudioFramesQueue(outputFormat);
+
+  bool get isEOF {
+    bindings.ca_decoder_get_eof(_pDecoder, _pIsEOF).throwIfNeeded();
+    return _pIsEOF.value != 0;
+  }
 
   late final NativeAudioFormat nativeFormat = () {
     final pFormat = allocate<ca_audio_format>(sizeOf<ca_audio_format>());
@@ -85,25 +76,29 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
 
   void _onDecoded(int frameCount, Pointer<Void> pBuffer) {
     final bufferIn = NativeAudioBuffer(pBuffer: pBuffer.cast(), sizeInFrames: frameCount, format: outputFormat);
-    final frames = AllocatedAudioFrames(length: frameCount, format: outputFormat);
-    frames.acquireBuffer(bufferIn.copyTo);
-    _queue.push(frames);
+    _queue.push(bufferIn);
+  }
+
+  var _cursorInFrames = 0;
+  @override
+  int get cursorInFrames => _cursorInFrames;
+
+  @override
+  set cursorInFrames(int frameIndex) {
+    bindings.ca_decoder_seek(_pDecoder, frameIndex, _pBytesOffset).throwIfNeeded();
+    dataSource.seek(_pBytesOffset.value, SeekOrigin.begin);
+    _cursorInFrames = frameIndex;
+    _queue.clear();
   }
 
   @override
-  int cursorInFrames = 0;
-
-  @override
   AudioDecodeResult decode({required AudioBuffer destination}) {
-    while (_queue.availableFrames <= destination.sizeInFrames) {
-      if (dataSource.length == dataSource.position) {
-        break;
-      }
+    while (_queue.availableFrames <= destination.sizeInFrames && !isEOF) {
       bindings.ca_decoder_decode(_pDecoder, 1024, _pBytesRead).throwIfNeeded();
     }
 
     final framesRead = _queue.read(destination);
-    cursorInFrames += framesRead;
+    _cursorInFrames += framesRead;
 
     return AudioDecodeResult(
       frames: framesRead,
@@ -112,7 +107,7 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
   }
 
   @override
-  int get lengthInFrames => throw UnimplementedError();
+  int get lengthInFrames => nativeFormat.length;
 
   @override
   late final AudioFormat outputFormat = nativeFormat.audioFormat!;

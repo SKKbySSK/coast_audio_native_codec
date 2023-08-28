@@ -33,6 +33,7 @@ dependencies:
 
   coast_audio: ^0.0.2+1
   flutter_coast_audio_miniaudio: ^0.0.1
+  file_picker: ^5.3.4
   coast_audio_native_codec:
     # When depending on this package from a real application you should use:
     #   coast_audio_native_codec: ^x.y.z

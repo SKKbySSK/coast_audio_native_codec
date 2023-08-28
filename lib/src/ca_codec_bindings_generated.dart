@@ -42,6 +42,7 @@ class CaCodecBindings {
     ca_decoder_config config,
     ca_decoder_read_proc pReadProc,
     ca_decoder_seek_proc pSeekProc,
+    ca_decoder_tell_proc pTellProc,
     ca_decoder_decoded_proc pDecodedProc,
     ffi.Pointer<ffi.Void> pUserData,
   ) {
@@ -50,6 +51,7 @@ class CaCodecBindings {
       config,
       pReadProc,
       pSeekProc,
+      pTellProc,
       pDecodedProc,
       pUserData,
     );
@@ -62,6 +64,7 @@ class CaCodecBindings {
               ca_decoder_config,
               ca_decoder_read_proc,
               ca_decoder_seek_proc,
+              ca_decoder_tell_proc,
               ca_decoder_decoded_proc,
               ffi.Pointer<ffi.Void>)>>('ca_decoder_init');
   late final _ca_decoder_init = _ca_decoder_initPtr.asFunction<
@@ -70,6 +73,7 @@ class CaCodecBindings {
           ca_decoder_config,
           ca_decoder_read_proc,
           ca_decoder_seek_proc,
+          ca_decoder_tell_proc,
           ca_decoder_decoded_proc,
           ffi.Pointer<ffi.Void>)>();
 
@@ -91,6 +95,42 @@ class CaCodecBindings {
               ffi.Pointer<ca_uint32>)>>('ca_decoder_decode');
   late final _ca_decoder_decode = _ca_decoder_decodePtr.asFunction<
       int Function(ffi.Pointer<ca_decoder>, int, ffi.Pointer<ca_uint32>)>();
+
+  int ca_decoder_seek(
+    ffi.Pointer<ca_decoder> pDecoder,
+    int frameIndex,
+    ffi.Pointer<ca_uint64> pBytesOffset,
+  ) {
+    return _ca_decoder_seek(
+      pDecoder,
+      frameIndex,
+      pBytesOffset,
+    );
+  }
+
+  late final _ca_decoder_seekPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ca_decoder>, ca_uint64,
+              ffi.Pointer<ca_uint64>)>>('ca_decoder_seek');
+  late final _ca_decoder_seek = _ca_decoder_seekPtr.asFunction<
+      int Function(ffi.Pointer<ca_decoder>, int, ffi.Pointer<ca_uint64>)>();
+
+  int ca_decoder_get_eof(
+    ffi.Pointer<ca_decoder> pDecoder,
+    ffi.Pointer<ca_bool> pIsEOF,
+  ) {
+    return _ca_decoder_get_eof(
+      pDecoder,
+      pIsEOF,
+    );
+  }
+
+  late final _ca_decoder_get_eofPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int32 Function(ffi.Pointer<ca_decoder>,
+              ffi.Pointer<ca_bool>)>>('ca_decoder_get_eof');
+  late final _ca_decoder_get_eof = _ca_decoder_get_eofPtr.asFunction<
+      int Function(ffi.Pointer<ca_decoder>, ffi.Pointer<ca_bool>)>();
 
   int ca_decoder_get_format(
     ffi.Pointer<ca_decoder> pDecoder,
@@ -129,6 +169,8 @@ abstract class ca_result {
   static const int ca_result_invalid_args = -1;
   static const int ca_result_seek_failed = -2;
   static const int ca_result_read_failed = -3;
+  static const int ca_result_tell_failed = -4;
+  static const int ca_result_unknown_failed = -5;
 }
 
 abstract class ca_read_result {
@@ -141,6 +183,12 @@ abstract class ca_seek_result {
   static const int ca_seek_result_success = 0;
   static const int ca_seek_result_unsupported = -1;
   static const int ca_seek_result_failed = -2;
+}
+
+abstract class ca_tell_result {
+  static const int ca_tell_result_success = 0;
+  static const int ca_tell_result_unknown_length = -1;
+  static const int ca_tell_result_failed = -2;
 }
 
 abstract class ca_sample_format {
@@ -162,10 +210,14 @@ final class ca_audio_format extends ffi.Struct {
   @ffi.Int32()
   external int sample_foramt;
 
+  @ca_uint64()
+  external int length;
+
   external UnnamedStruct1 apple;
 }
 
 typedef ca_uint32 = ffi.UnsignedInt;
+typedef ca_uint64 = ffi.UnsignedLongLong;
 
 final class UnnamedStruct1 extends ffi.Struct {
   @ffi.Int()
@@ -199,10 +251,15 @@ typedef ca_decoder_seek_proc = ffi.Pointer<
     ffi.NativeFunction<
         ffi.Int32 Function(ca_uint32 byteOffset, ffi.Int32 origin,
             ffi.Pointer<ffi.Void> pUserData)>>;
+typedef ca_decoder_tell_proc = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Int32 Function(ffi.Pointer<ca_uint64> pPosition,
+            ffi.Pointer<ca_uint64> pLength, ffi.Pointer<ffi.Void> pUserData)>>;
 typedef ca_decoder_decoded_proc = ffi.Pointer<
     ffi.NativeFunction<
         ffi.Void Function(ca_uint32 frameCount, ffi.Pointer<ffi.Void> pBuffer,
             ffi.Pointer<ffi.Void> pUserData)>>;
+typedef ca_bool = ffi.Int;
 
 const int CA_TRUE = 1;
 

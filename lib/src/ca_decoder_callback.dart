@@ -8,12 +8,14 @@ class CaDecoderCallback {
   CaDecoderCallback(
     this.onRead,
     this.onSeek,
+    this.onTell,
     this.onDecoded,
     this._dataSource,
     this._onDecoded,
   );
   final ca_decoder_read_proc onRead;
   final ca_decoder_seek_proc onSeek;
+  final ca_decoder_tell_proc onTell;
   final ca_decoder_decoded_proc onDecoded;
 
   final AudioInputDataSource _dataSource;
@@ -59,6 +61,22 @@ class CaDecoderCallbackRegistry {
     return ca_seek_result.ca_seek_result_success;
   }
 
+  static int _onTell(Pointer<UnsignedLongLong> pPosition, Pointer<UnsignedLongLong> pLength, Pointer<Void> pUserData) {
+    final cb = _callbacks[pUserData.address];
+    if (cb == null) {
+      return ca_tell_result.ca_tell_result_failed;
+    }
+
+    final length = cb._dataSource.length;
+    if (pPosition != nullptr) {
+      pPosition.value = cb._dataSource.position;
+    }
+    if (pLength != nullptr) {
+      pLength.value = length ?? 0;
+    }
+    return length == null ? ca_tell_result.ca_tell_result_unknown_length : ca_tell_result.ca_tell_result_success;
+  }
+
   static void _onDecoded(int frameCount, Pointer<Void> pBuffer, Pointer<Void> pUserData) {
     final cb = _callbacks[pUserData.address];
     cb?._onDecoded(frameCount, pBuffer);
@@ -72,8 +90,9 @@ class CaDecoderCallbackRegistry {
     void Function(int frameCount, Pointer<Void> pBuffer) onDecoded,
   ) {
     final cb = CaDecoderCallback(
-      Pointer.fromFunction(_onRead, 0),
-      dataSource.canSeek ? Pointer.fromFunction(_onSeek, 0) : nullptr,
+      Pointer.fromFunction(_onRead, ca_read_result.ca_read_result_failed),
+      dataSource.canSeek ? Pointer.fromFunction(_onSeek, ca_seek_result.ca_seek_result_failed) : nullptr,
+      Pointer.fromFunction(_onTell, ca_tell_result.ca_tell_result_failed),
       Pointer.fromFunction(_onDecoded),
       dataSource,
       onDecoded,

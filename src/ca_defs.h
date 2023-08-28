@@ -21,6 +21,8 @@ typedef enum
   ca_result_invalid_args = -1,
   ca_result_seek_failed = -2,
   ca_result_read_failed = -3,
+  ca_result_tell_failed = -4,
+  ca_result_unknown_failed = -5,
 } ca_result;
 
 typedef int ca_bool;
@@ -45,6 +47,13 @@ typedef enum
 
 typedef enum
 {
+  ca_tell_result_success = 0,
+  ca_tell_result_unknown_length = -1,
+  ca_tell_result_failed = -2,
+} ca_tell_result;
+
+typedef enum
+{
   ca_sample_format_unknown = 0,
   ca_sample_format_u8 = 1,
   ca_sample_format_s16 = 2,
@@ -58,6 +67,7 @@ typedef struct
   ca_uint32 channels;
   ca_uint32 sample_rate;
   ca_sample_format sample_foramt;
+  ca_uint64 length;
   struct
   {
     int format_id;

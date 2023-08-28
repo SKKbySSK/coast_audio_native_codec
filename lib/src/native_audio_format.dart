@@ -10,6 +10,7 @@ class NativeAudioFormat {
     required this.channels,
     required this.sampleRate,
     required this.sampleFormat,
+    required this.length,
     this.apple,
   });
 
@@ -18,6 +19,7 @@ class NativeAudioFormat {
       channels: format.channels,
       sampleRate: format.sample_rate,
       sampleFormat: CaSampleFormat.values.firstWhere((f) => f.value == format.sample_foramt),
+      length: format.length,
       apple: Platform.isIOS || Platform.isMacOS ? AppleAudioFormat(FourCC(format.apple.format_id)) : null,
     );
   }
@@ -25,6 +27,7 @@ class NativeAudioFormat {
   final int channels;
   final int sampleRate;
   final CaSampleFormat sampleFormat;
+  final int length;
   final AppleAudioFormat? apple;
 
   AudioFormat? get audioFormat {

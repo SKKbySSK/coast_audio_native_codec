@@ -11,13 +11,13 @@ FFI_PLUGIN_EXPORT ca_decoder_config ca_decoder_config_init()
   return config;
 }
 
-FFI_PLUGIN_EXPORT ca_result ca_decoder_init(ca_decoder *pDecoder, ca_decoder_config config, ca_decoder_read_proc pReadProc, ca_decoder_seek_proc pSeekProc, ca_decoder_decoded_proc pDecodedProc, void *pUserData)
+FFI_PLUGIN_EXPORT ca_result ca_decoder_init(ca_decoder *pDecoder, ca_decoder_config config, ca_decoder_read_proc pReadProc, ca_decoder_seek_proc pSeekProc, ca_decoder_tell_proc pTellProc, ca_decoder_decoded_proc pDecodedProc, void *pUserData)
 {
 #if __APPLE__
   audio_file_stream *pStream = (audio_file_stream *)malloc(sizeof(audio_file_stream));
   pDecoder->pDecoder = pStream;
-  
-  ca_result result = audio_file_stream_init(pStream, config, 1024 * 1024, 4096, pReadProc, pSeekProc, pDecodedProc, pUserData);
+
+  ca_result result = audio_file_stream_init(pStream, config, pReadProc, pSeekProc, pTellProc, pDecodedProc, pUserData);
   if (result != ca_result_success)
   {
     free(pStream);
@@ -36,6 +36,20 @@ FFI_PLUGIN_EXPORT ca_result ca_decoder_decode(ca_decoder *pDecoder, ca_uint32 by
 #endif
 }
 
+FFI_PLUGIN_EXPORT ca_result ca_decoder_seek(ca_decoder *pDecoder, ca_uint64 frameIndex, ca_uint64 *pBytesOffset)
+{
+#if __APPLE__
+  return audio_file_stream_seek((audio_file_stream *)pDecoder->pDecoder, frameIndex, pBytesOffset);
+#endif
+}
+
+FFI_PLUGIN_EXPORT ca_result ca_decoder_get_eof(ca_decoder *pDecoder, ca_bool *pIsEOF)
+{
+#if __APPLE__
+  return audio_file_stream_get_eof((audio_file_stream *)pDecoder->pDecoder, pIsEOF);
+#endif
+}
+
 FFI_PLUGIN_EXPORT ca_result ca_decoder_get_format(ca_decoder *pDecoder, ca_audio_format *pFormat)
 {
 #if __APPLE__
@@ -49,6 +63,7 @@ FFI_PLUGIN_EXPORT ca_result ca_decoder_get_format(ca_decoder *pDecoder, ca_audio
   pFormat->channels = format.channels;
   pFormat->sample_rate = format.sample_rate;
   pFormat->sample_foramt = format.sample_foramt;
+  pFormat->length = format.length;
   pFormat->apple.format_id = format.format_id;
   return ca_result_success;
 #endif
