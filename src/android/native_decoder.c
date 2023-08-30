@@ -181,7 +181,7 @@ ca_result native_decoder_init(native_decoder *pDecoder, ca_decoder_config config
   }
 
   jmethodID prepareMethod = (*env)->GetMethodID(env, decoderClass, "prepare", "()Z");
-  jboolean prepared = (*env)->CallBooleanMethod(env, pData->decoder, prepareMethod);
+  jboolean prepared = (*env)->CallBooleanMethod(env, decoder, prepareMethod);
   if (!prepared)
   {
     return ca_result_unsupported_format;
