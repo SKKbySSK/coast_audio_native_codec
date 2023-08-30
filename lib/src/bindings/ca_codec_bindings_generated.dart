@@ -164,7 +164,8 @@ abstract class ca_result {
   static const int ca_result_read_failed = -3;
   static const int ca_result_tell_failed = -4;
   static const int ca_result_not_initialized = -5;
-  static const int ca_result_unknown_failed = -999;
+  static const int ca_result_unsupported_format = -6;
+  static const int ca_result_unknown_failed = -1000;
 }
 
 abstract class ca_read_result {

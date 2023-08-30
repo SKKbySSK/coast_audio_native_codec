@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:coast_audio/coast_audio.dart';
 
-import 'ca_codec_bindings_generated.dart';
+import '../bindings/ca_codec_bindings_generated.dart';
 
 class CaDecoderCallback {
   CaDecoderCallback(

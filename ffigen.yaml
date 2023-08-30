@@ -4,7 +4,7 @@ description: |
   Bindings for `src/coast_audio_native_codec.h`.
 
   Regenerate bindings with `flutter pub run ffigen --config ffigen.yaml`.
-output: 'lib/src/ca_codec_bindings_generated.dart'
+output: 'lib/src/bindings/ca_codec_bindings_generated.dart'
 compiler-opts: 
   - '-I/usr/lib/llvm-9/include/'
 headers:

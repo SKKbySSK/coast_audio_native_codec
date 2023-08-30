@@ -2,12 +2,13 @@ import 'dart:ffi';
 import 'dart:math';
 
 import 'package:coast_audio/coast_audio.dart';
-import 'package:coast_audio_native_codec/src/ca_decoder_callback.dart';
-import 'package:coast_audio_native_codec/src/native_audio_buffer.dart';
+import 'package:coast_audio_native_codec/src/decoder/ca_decoder_callback.dart';
 import 'package:coast_audio_native_codec/src/native_audio_format.dart';
+import 'package:coast_audio_native_codec/src/utils/ca_result_extension.dart';
+import 'package:coast_audio_native_codec/src/utils/native_audio_buffer.dart';
 
-import 'ca_codec_bindings_generated.dart';
-import 'native_audio_codec.dart';
+import '../bindings/ca_codec_bindings_generated.dart';
+import '../native_audio_codec.dart';
 
 class _AudioFramesQueue {
   _AudioFramesQueue(this.format);

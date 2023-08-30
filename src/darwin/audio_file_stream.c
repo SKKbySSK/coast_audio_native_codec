@@ -322,7 +322,7 @@ static ca_result audio_file_stream_parse_bytes(audio_file_stream *pStream, ca_ui
     ca_result result = osstatus_to_result(AudioFileStreamParseBytes(pData->pStreamId, bytesRead, pData->pParsingBuffer, shouldFlagDiscontinuity ? kAudioFileStreamParseFlag_Discontinuity : 0));
     if (result != ca_result_success)
     {
-      return result;
+      return ca_result_unsupported_format;
     }
 
     pData->isDiscontinued = CA_FALSE;
@@ -359,7 +359,7 @@ static ca_result audio_file_stream_load(audio_file_stream *pStream)
     result = audio_file_stream_parse_bytes(pStream, &bytesToRead);
     if (result != ca_result_success)
     {
-      return result;
+      return ca_result_unsupported_format;
     }
 
     totalBytesRead += bytesToRead;
@@ -539,13 +539,14 @@ ca_result audio_file_stream_uninit(audio_file_stream *pStream)
   }
 
   free(pData->pParsingBuffer);
-  free(pData);
 
   ca_result result = osstatus_to_result(AudioFileStreamClose(pData->pStreamId));
   if (pData->isAudioConverterReady)
   {
     result = osstatus_to_result(AudioConverterDispose(pData->pAudioConverter));
   }
+
+  free(pData);
 
   return result;
 }

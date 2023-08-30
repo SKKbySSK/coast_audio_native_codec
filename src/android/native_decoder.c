@@ -180,6 +180,13 @@ ca_result native_decoder_init(native_decoder *pDecoder, ca_decoder_config config
     return ca_result_unknown_failed;
   }
 
+  jmethodID prepareMethod = (*env)->GetMethodID(env, decoderClass, "prepare", "()Z");
+  jboolean prepared = (*env)->CallBooleanMethod(env, pData->decoder, prepareMethod);
+  if (!prepared)
+  {
+    return ca_result_unsupported_format;
+  }
+
   pData->decoder = (*env)->NewGlobalRef(env, decoder);
 
   return ca_result_success;
@@ -233,7 +240,8 @@ ca_result native_decoder_decode_next(native_decoder *pDecoder)
 
   jmethodID decodeNextMethod = (*env)->GetMethodID(env, decoderClass, "decodeNext", "()Lwork/kscafe/coast_audio_native_codec/AudioBuffer;");
   jobject audioBuffer = (*env)->CallObjectMethod(env, pData->decoder, decodeNextMethod);
-  while (audioBuffer == NULL) {
+  while (audioBuffer == NULL)
+  {
     audioBuffer = (*env)->CallObjectMethod(env, pData->decoder, decodeNextMethod);
   }
 
@@ -243,7 +251,7 @@ ca_result native_decoder_decode_next(native_decoder *pDecoder)
   jfieldID frameCountField = (*env)->GetFieldID(env, audioBufferClass, "frameCount", "I");
   jint frameCount = (*env)->GetIntField(env, audioBuffer, frameCountField);
 
-  void* pBufferOut = (*env)->GetDirectBufferAddress(env, buffer);
+  void *pBufferOut = (*env)->GetDirectBufferAddress(env, buffer);
   pData->decodedFunc(frameCount, pBufferOut, pDecoder->pUserData);
 
   return ca_result_success;

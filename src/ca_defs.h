@@ -23,7 +23,8 @@ typedef enum
   ca_result_read_failed = -3,
   ca_result_tell_failed = -4,
   ca_result_not_initialized = -5,
-  ca_result_unknown_failed = -999,
+  ca_result_unsupported_format = -6,
+  ca_result_unknown_failed = -1000,
 } ca_result;
 
 typedef int ca_bool;

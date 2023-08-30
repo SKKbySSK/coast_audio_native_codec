@@ -51,30 +51,34 @@ private val MediaFormat.lengthInFrames: Long?
 public class NativeDecoder constructor(private val pClientData: Long) : MediaDataSource() {
   private val extractor = MediaExtractor().also { it.setDataSource(this) }
 
-  private val codec: MediaCodec
-  private val trackIndex: Int
-
-  private val trackFormat: MediaFormat
-  private val outputFormat: MediaFormat
+  private lateinit var codec: MediaCodec
+  private lateinit var trackFormat: MediaFormat
+  private lateinit var outputFormat: MediaFormat
+  private var prepared = false
 
   private val bufferInfo = MediaCodec.BufferInfo()
 
   private var endOfFile = false
   private var bytesToCutAfterSeek = 0
 
-  init {
-    val (codec, trackIndex) = prepare()
+  private fun prepare(): Boolean {
+    if (prepared) {
+      return true
+    }
+
+    val (codec, trackIndex) = createCodec() ?: return false
     this.codec = codec
-    this.trackIndex = trackIndex
     this.trackFormat = extractor.getTrackFormat(trackIndex)
     this.outputFormat = codec.outputFormat
+    prepared = true
+    return true
   }
 
-  private fun prepare(): Pair<MediaCodec, Int> {
+  private fun createCodec(): Pair<MediaCodec, Int>? {
     // Check the source for valid audio content.
     val trackCount = extractor.trackCount
     if (trackCount <= 0) {
-      throw NativeDecoderException("No track")
+      return null
     }
 
     for (trackIndex in 0 until trackCount) {
@@ -88,12 +92,12 @@ public class NativeDecoder constructor(private val pClientData: Long) : MediaDat
           codec.start()
           return Pair(codec, trackIndex)
         } catch (e: Exception) {
-          throw NativeDecoderException(e.localizedMessage)
+          return null
         }
       }
     }
 
-    throw NativeDecoderException("No valid track found")
+    return null
   }
 
   // Returns false on error.
@@ -183,7 +187,10 @@ public class NativeDecoder constructor(private val pClientData: Long) : MediaDat
   }
 
   fun dispose() {
-    codec.stop()
+    if (prepared) {
+      codec.stop()
+      prepared = false
+    }
   }
 
   // MediaDataSource implementation

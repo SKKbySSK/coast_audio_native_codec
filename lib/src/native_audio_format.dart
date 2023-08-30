@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:coast_audio/coast_audio.dart';
-import 'package:coast_audio_native_codec/coast_audio_native_codec.dart';
-import 'package:coast_audio_native_codec/src/ca_codec_bindings_generated.dart';
 import 'package:coast_audio_native_codec/src/ca_sample_format.dart';
+import 'package:coast_audio_native_codec/src/utils/four_cc.dart';
+
+import 'bindings/ca_codec_bindings_generated.dart';
 
 class NativeAudioFormat {
   const NativeAudioFormat({
