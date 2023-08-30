@@ -62,9 +62,13 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
 
   late final _queue = _AudioFramesQueue(outputFormat);
 
-  bool get isEOF {
+  bool get _isNativeEOF {
     bindings.ca_decoder_get_eof(_pDecoder, _pIsEOF).throwIfNeeded();
     return _pIsEOF.value != 0;
+  }
+
+  bool get isEOF {
+    return _isNativeEOF && _queue.availableFrames == 0;
   }
 
   late final NativeAudioFormat nativeFormat = () {

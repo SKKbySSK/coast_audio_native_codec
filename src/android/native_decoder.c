@@ -307,7 +307,13 @@ ca_result native_decoder_uninit(native_decoder *pDecoder)
 
   native_decoder_data *pData = (native_decoder_data *)pDecoder->pData;
 
+  jclass decoderClass = load_class(env, DECODER_CLASS_NAME);
+  jmethodID disposeMethod = (*env)->GetMethodID(env, decoderClass, "dispose", "()V");
+  (*env)->CallVoidMethod(env, pData->decoder, disposeMethod);
+
   (*env)->DeleteGlobalRef(env, pData->decoder);
+
+  free(pData);
 
   if ((*env)->ExceptionCheck(env))
   {

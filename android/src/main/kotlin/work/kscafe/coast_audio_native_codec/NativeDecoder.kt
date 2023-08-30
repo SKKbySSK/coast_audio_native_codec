@@ -5,7 +5,6 @@ import android.media.MediaCodec
 import android.media.MediaDataSource
 import android.media.MediaExtractor
 import android.media.MediaFormat
-import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -50,7 +49,6 @@ private val MediaFormat.lengthInFrames: Long?
   }
 
 public class NativeDecoder constructor(private val pClientData: Long) : MediaDataSource() {
-  private var lastError: String? = null
   private val extractor = MediaExtractor().also { it.setDataSource(this) }
 
   private val codec: MediaCodec
@@ -89,7 +87,7 @@ public class NativeDecoder constructor(private val pClientData: Long) : MediaDat
           codec.configure(format, null, null, 0)
           codec.start()
           return Pair(codec, trackIndex)
-        } catch (e: java.lang.Exception) {
+        } catch (e: Exception) {
           throw NativeDecoderException(e.localizedMessage)
         }
       }
@@ -110,13 +108,8 @@ public class NativeDecoder constructor(private val pClientData: Long) : MediaDat
     // Check how many bytes should be cut at the beginning for precise frame positioning.
     val timeToCutUs: Double = timeUs - extractor.sampleTime
     bytesToCutAfterSeek = if (timeToCutUs <= 0) 0 else (timeToCutUs / 1000000.0 * sampleRate).toInt() * bytesPerFrame
-    Log.d("", "cut after seek " + bytesToCutAfterSeek / bytesPerFrame)
-    try {
-      codec.flush()
-      endOfFile = false
-    } catch (e: java.lang.Exception) {
-      throw NativeDecoderException(e.localizedMessage)
-    }
+    codec.flush()
+    endOfFile = false
   }
 
   private fun extractNextSample(): Int? {
@@ -159,7 +152,7 @@ public class NativeDecoder constructor(private val pClientData: Long) : MediaDat
         return null
       } else { // Finish cutting.
         outputBuffer.position(bytesToCutAfterSeek)
-        
+
         copiedBuffer = ByteBuffer.allocateDirect(bytesRead)
         copiedBuffer.put(outputBuffer.slice())
         bytesToCutAfterSeek = 0
@@ -189,10 +182,8 @@ public class NativeDecoder constructor(private val pClientData: Long) : MediaDat
     return decode()
   }
 
-  fun getLastError(): String? {
-    val e = lastError
-    lastError = null
-    return e
+  fun dispose() {
+    codec.stop()
   }
 
   // MediaDataSource implementation
