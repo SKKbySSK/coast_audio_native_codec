@@ -5,6 +5,8 @@
   "editor.formatOnSave": true,
   "files.associations": {
     "stdio.h": "c",
-    "filesystem": "c"
+    "filesystem": "c",
+    "audio_file_stream.h": "c",
+    "__locale": "c"
   }
 }

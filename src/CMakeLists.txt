@@ -6,11 +6,13 @@ cmake_minimum_required(VERSION 3.10)
 project(coast_audio_native_codec_library VERSION 0.0.1 LANGUAGES C)
 
 add_library(coast_audio_native_codec SHARED
-  "coast_audio_native_codec.c"
+  "ca_defs.h"
+  "android/native_decoder.c"
+  "ca_decoder.c"
 )
 
 set_target_properties(coast_audio_native_codec PROPERTIES
-  PUBLIC_HEADER coast_audio_native_codec.h
+  PUBLIC_HEADER ca_decoder.h
   OUTPUT_NAME "coast_audio_native_codec"
 )
 

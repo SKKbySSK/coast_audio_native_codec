@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #define MAX_HEADER_SIZE 1024 * 1024
+#define DECODE_SIZE 1024
 #define BUFFER_SIZE 4096
 #define PACKET_AGGREGATION_COUNT 128
 #define EOF_ON_READ_FAILED CA_TRUE
@@ -244,7 +245,7 @@ static void audio_file_stream_packets(void *inClientData, UInt32 inNumberBytes, 
     {
       return;
     }
-    
+
     UInt32 minBufferSize = 0;
     result = get_converter_property(pStream, kAudioConverterPropertyMinimumOutputBufferSize, sizeof(UInt32), &minBufferSize);
     if (result != ca_result_success && result != kAudioConverterErr_PropertyNotSupported)
@@ -452,21 +453,13 @@ ca_result audio_file_stream_get_format(audio_file_stream *pStream, audio_file_st
   return result;
 }
 
-ca_result audio_file_stream_decode(audio_file_stream *pStream, ca_uint32 bytesToRead, ca_uint32 *pBytesRead)
+ca_result audio_file_stream_decode_next(audio_file_stream *pStream)
 {
-  ca_uint32 bytesRead = bytesToRead;
-  ca_result result = audio_file_stream_parse_bytes(pStream, &bytesRead);
-  if (result != ca_read_result_success)
-  {
-    *pBytesRead = 0;
-    return result;
-  }
-
-  *pBytesRead = bytesRead;
-  return result;
+  ca_uint32 bytesRead = DECODE_SIZE;
+  return audio_file_stream_parse_bytes(pStream, &bytesRead);
 }
 
-ca_result audio_file_stream_seek(audio_file_stream *pStream, ca_uint64 frameIndex, ca_uint64 *pBytesOffset)
+ca_result audio_file_stream_seek(audio_file_stream *pStream, ca_uint64 frameIndex)
 {
   audio_file_stream_data *pData = (audio_file_stream_data *)pStream->pData;
 
@@ -500,7 +493,13 @@ ca_result audio_file_stream_seek(audio_file_stream *pStream, ca_uint64 frameInde
     }
   }
 
-  *pBytesOffset = (ca_uint64)(dataByteOffset + dataOffset);
+  ca_uint64 position = (ca_uint64)(dataByteOffset + dataOffset);
+  ca_seek_result seekResult = pData->seekFunc(position, ca_seek_origin_start, pStream->pUserData);
+  if (seekResult != ca_seek_result_success)
+  {
+    return ca_result_seek_failed;
+  }
+
   return ca_result_success;
 }
 

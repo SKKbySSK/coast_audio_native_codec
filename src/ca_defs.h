@@ -22,13 +22,15 @@ typedef enum
   ca_result_seek_failed = -2,
   ca_result_read_failed = -3,
   ca_result_tell_failed = -4,
-  ca_result_unknown_failed = -5,
+  ca_result_not_initialized = -5,
+  ca_result_unknown_failed = -999,
 } ca_result;
 
 typedef int ca_bool;
 
 typedef unsigned long long ca_uint64;
 typedef unsigned int ca_uint32;
+typedef long long ca_int64;
 typedef int ca_int32;
 
 typedef enum

@@ -21,9 +21,9 @@ ca_result audio_file_stream_init(audio_file_stream *pStream, ca_decoder_config c
 
 ca_result audio_file_stream_get_format(audio_file_stream *pStream, audio_file_stream_format *pFormat);
 
-ca_result audio_file_stream_decode(audio_file_stream *pStream, ca_uint32 bytesToRead, ca_uint32 *pBytesRead);
+ca_result audio_file_stream_decode_next(audio_file_stream *pStream);
 
-ca_result audio_file_stream_seek(audio_file_stream *pStream, ca_uint64 frameIndex, ca_uint64 *pBytesOffset);
+ca_result audio_file_stream_seek(audio_file_stream *pStream, ca_uint64 frameIndex);
 
 ca_result audio_file_stream_get_eof(audio_file_stream *pStream, ca_bool *pIsEOF);
 

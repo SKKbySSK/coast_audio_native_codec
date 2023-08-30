@@ -10,3 +10,18 @@ class NativeAudioBuffer extends AudioBuffer {
           sizeInBytes: format.bytesPerFrame * sizeInFrames,
         );
 }
+
+extension AudioBufferExtension on AudioBuffer {
+  List<num> asNativeListView() {
+    switch (format.sampleFormat) {
+      case SampleFormat.uint8:
+        return asUint8ListViewFrames();
+      case SampleFormat.int16:
+        return asInt16ListView();
+      case SampleFormat.int32:
+        return asInt32ListView();
+      case SampleFormat.float32:
+        return asFloat32ListView();
+    }
+  }
+}

@@ -21,17 +21,17 @@ class _AudioFramesQueue {
 
   int read(AudioBuffer destination) {
     var buffer = destination;
-    final floatList = buffer.asFloat32ListView();
-    final length = min(floatList.length, _samples.length);
+    final list = buffer.asNativeListView();
+    final length = min(list.length, _samples.length);
     for (var i = 0; length > i; i++) {
-      floatList[i] = _samples[i] as double;
+      list[i] = _samples[i];
     }
     _samples.removeRange(0, length);
     return length ~/ format.channels;
   }
 
-  void push(AudioBuffer buffer) {
-    _samples.addAll(buffer.asFloat32ListView());
+  void push(NativeAudioBuffer buffer) {
+    _samples.addAll(buffer.asNativeListView());
   }
 
   void clear() {
@@ -42,6 +42,7 @@ class _AudioFramesQueue {
 class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
   NativeAudioDecoder({
     required this.dataSource,
+    this.minBufferFrameCount = 2048,
     super.memory,
   }) {
     final config = bindings.ca_decoder_config_init();
@@ -53,13 +54,11 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
 
   final AudioInputDataSource dataSource;
 
+  final int minBufferFrameCount;
+
   late final _pDecoder = allocate<ca_decoder>(sizeOf<ca_decoder>());
 
-  late final _pBytesRead = allocate<UnsignedInt>(sizeOf<UnsignedInt>());
-
   late final _pIsEOF = allocate<Int>(sizeOf<Int>());
-
-  late final _pBytesOffset = allocate<UnsignedLongLong>(sizeOf<UnsignedLongLong>());
 
   late final _queue = _AudioFramesQueue(outputFormat);
 
@@ -85,8 +84,7 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
 
   @override
   set cursorInFrames(int frameIndex) {
-    bindings.ca_decoder_seek(_pDecoder, frameIndex, _pBytesOffset).throwIfNeeded();
-    dataSource.seek(_pBytesOffset.value, SeekOrigin.begin);
+    bindings.ca_decoder_seek(_pDecoder, frameIndex).throwIfNeeded();
     _cursorInFrames = frameIndex;
     _queue.clear();
   }
@@ -100,10 +98,18 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
   @override
   bool get canSeek => true;
 
+  void prepare() {
+    while (_queue.availableFrames <= minBufferFrameCount && !isEOF) {
+      bindings.ca_decoder_decode_next(_pDecoder).throwIfNeeded();
+    }
+  }
+
   @override
   AudioDecodeResult decode({required AudioBuffer destination}) {
+    prepare();
+
     while (_queue.availableFrames <= destination.sizeInFrames && !isEOF) {
-      bindings.ca_decoder_decode(_pDecoder, 1024, _pBytesRead).throwIfNeeded();
+      bindings.ca_decoder_decode_next(_pDecoder).throwIfNeeded();
     }
 
     final framesRead = _queue.read(destination);

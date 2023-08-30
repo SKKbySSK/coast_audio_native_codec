@@ -77,43 +77,36 @@ class CaCodecBindings {
           ca_decoder_decoded_proc,
           ffi.Pointer<ffi.Void>)>();
 
-  int ca_decoder_decode(
+  int ca_decoder_decode_next(
     ffi.Pointer<ca_decoder> pDecoder,
-    int bytesToRead,
-    ffi.Pointer<ca_uint32> pBytesRead,
   ) {
-    return _ca_decoder_decode(
+    return _ca_decoder_decode_next(
       pDecoder,
-      bytesToRead,
-      pBytesRead,
     );
   }
 
-  late final _ca_decoder_decodePtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Pointer<ca_decoder>, ca_uint32,
-              ffi.Pointer<ca_uint32>)>>('ca_decoder_decode');
-  late final _ca_decoder_decode = _ca_decoder_decodePtr.asFunction<
-      int Function(ffi.Pointer<ca_decoder>, int, ffi.Pointer<ca_uint32>)>();
+  late final _ca_decoder_decode_nextPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<ca_decoder>)>>(
+          'ca_decoder_decode_next');
+  late final _ca_decoder_decode_next = _ca_decoder_decode_nextPtr
+      .asFunction<int Function(ffi.Pointer<ca_decoder>)>();
 
   int ca_decoder_seek(
     ffi.Pointer<ca_decoder> pDecoder,
     int frameIndex,
-    ffi.Pointer<ca_uint64> pBytesOffset,
   ) {
     return _ca_decoder_seek(
       pDecoder,
       frameIndex,
-      pBytesOffset,
     );
   }
 
   late final _ca_decoder_seekPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Pointer<ca_decoder>, ca_uint64,
-              ffi.Pointer<ca_uint64>)>>('ca_decoder_seek');
-  late final _ca_decoder_seek = _ca_decoder_seekPtr.asFunction<
-      int Function(ffi.Pointer<ca_decoder>, int, ffi.Pointer<ca_uint64>)>();
+          ffi.Int32 Function(
+              ffi.Pointer<ca_decoder>, ca_uint64)>>('ca_decoder_seek');
+  late final _ca_decoder_seek = _ca_decoder_seekPtr
+      .asFunction<int Function(ffi.Pointer<ca_decoder>, int)>();
 
   int ca_decoder_get_eof(
     ffi.Pointer<ca_decoder> pDecoder,
@@ -170,7 +163,8 @@ abstract class ca_result {
   static const int ca_result_seek_failed = -2;
   static const int ca_result_read_failed = -3;
   static const int ca_result_tell_failed = -4;
-  static const int ca_result_unknown_failed = -5;
+  static const int ca_result_not_initialized = -5;
+  static const int ca_result_unknown_failed = -999;
 }
 
 abstract class ca_read_result {
@@ -249,8 +243,9 @@ typedef ca_decoder_read_proc = ffi.Pointer<
             ffi.Pointer<ffi.Void> pUserData)>>;
 typedef ca_decoder_seek_proc = ffi.Pointer<
     ffi.NativeFunction<
-        ffi.Int32 Function(ca_uint32 byteOffset, ffi.Int32 origin,
+        ffi.Int32 Function(ca_int64 byteOffset, ffi.Int32 origin,
             ffi.Pointer<ffi.Void> pUserData)>>;
+typedef ca_int64 = ffi.LongLong;
 typedef ca_decoder_tell_proc = ffi.Pointer<
     ffi.NativeFunction<
         ffi.Int32 Function(ffi.Pointer<ca_uint64> pPosition,
