@@ -104,7 +104,7 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
   bool get canSeek => true;
 
   void prepare() {
-    while (_queue.availableFrames <= minBufferFrameCount && !isEOF) {
+    while (_queue.availableFrames <= minBufferFrameCount && !_isNativeEOF) {
       bindings.ca_decoder_decode_next(_pDecoder).throwIfNeeded();
     }
   }
@@ -113,7 +113,7 @@ class NativeAudioDecoder extends NativeAudioCodecBase implements AudioDecoder {
   AudioDecodeResult decode({required AudioBuffer destination}) {
     prepare();
 
-    while (_queue.availableFrames <= destination.sizeInFrames && !isEOF) {
+    while (_queue.availableFrames <= destination.sizeInFrames && !_isNativeEOF) {
       bindings.ca_decoder_decode_next(_pDecoder).throwIfNeeded();
     }
 
